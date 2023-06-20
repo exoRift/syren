@@ -24,13 +24,15 @@ test('message sent', (t) => {
     t.is(msg.content, 'content', 'content matches')
   })
 
-  t.context.client.sendFakeMessage('content')
+  return t.context.client.sendFakeMessage({
+    content: 'content'
+  })
 })
 
-test('message response', (t) => {
+test('message response', async (t) => {
   const promise = new Promise((resolve) => {
     t.context.client.once('messageCreate', (msg) => {
-      return msg.channel?.createMessage({
+      msg.channel?.createMessage({
         content: 'response'
       })
         .then((response) => {
@@ -43,7 +45,9 @@ test('message response', (t) => {
     })
   })
 
-  t.context.client.sendFakeMessage('initial')
+  await t.context.client.sendFakeMessage({
+    content: 'initial'
+  })
 
-  return promise
+  return await promise
 })

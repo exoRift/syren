@@ -1,5 +1,6 @@
 import {
   type AnyChannel,
+  type CreateMessageOptions,
   Client as OceanicClient,
   CommandInteraction,
   ChannelTypes,
@@ -13,9 +14,7 @@ import {
   ApplicationCommandTypes,
   InteractionTypes,
   ClientApplication,
-  Message,
-  User,
-  MessageTypes
+  User
 } from 'oceanic.js'
 
 import { TextChannel } from './structures/TextChannel'
@@ -107,23 +106,8 @@ export class Client extends OceanicClient {
     return this.fakeChannel as unknown as T
   }
 
-  sendFakeMessage (content: string): void {
-    const message = new Message({
-      attachments: [],
-      author: this._fakeUserRaw,
-      channel_id: 'test_channel',
-      content,
-      edited_timestamp: 'ts',
-      embeds: [],
-      id: 'test_message',
-      mention_everyone: false,
-      mention_roles: [],
-      mentions: [],
-      pinned: false,
-      timestamp: 'ts',
-      tts: false,
-      type: MessageTypes.DEFAULT
-    }, this)
+  async sendFakeMessage (options: CreateMessageOptions): Promise<void> {
+    const message = await this.fakeChannel.createMessage(options)
 
     this.emit('messageCreate', message)
   }

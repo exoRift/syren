@@ -1,5 +1,6 @@
 import {
   type CreateMessageOptions,
+  type RawAttachment,
   TextChannel as OTextChannel,
   Message,
   MessageTypes
@@ -12,7 +13,21 @@ export class TextChannel extends OTextChannel {
 
   async createMessage (options: CreateMessageOptions): Promise<Message<OTextChannel>> {
     const message = new Message<TextChannel>({
-      attachments: [],
+      attachments: options.attachments?.map((a) => ({
+        filename: a.filename ?? 'file',
+        id: a.id,
+        proxy_url: 'invalid_url',
+        size: 0,
+        url: 'invalid_url',
+        description: a.description
+      } satisfies RawAttachment)).concat(options.files?.map((f) => ({
+        filename: f.name,
+        id: 'raw_file_' + Date.now().toString(),
+        proxy_url: 'invalid_url',
+        size: 0,
+        url: 'invalid_url',
+        description: undefined
+      } satisfies RawAttachment)) ?? []) ?? [],
       author: this.client._fakeUserRaw,
       channel_id: 'test_channel',
       content: options.content ?? '',
