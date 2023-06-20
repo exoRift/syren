@@ -114,12 +114,13 @@ export class Client extends OceanicClient {
 
   sendFakeInteraction (): void {
     const interaction = new CommandInteraction({
-      application_id: 'test_application',
+      application_id: this.application.id,
+      channel_id: this.fakeChannel.id,
       data: {
         id: 'test_command',
         name: 'command',
         type: ApplicationCommandTypes.CHAT_INPUT,
-        guild_id: 'test_guild'
+        guild_id: this.fakeGuild.id
       },
       user: this._fakeUserRaw,
       id: 'test_command',
