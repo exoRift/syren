@@ -1,8 +1,8 @@
 import {
+  type AnyChannel,
   Client as OceanicClient,
   CommandInteraction,
   ChannelTypes,
-  TextChannel,
   Guild,
   DefaultMessageNotificationLevels,
   ExplicitContentFilterLevels,
@@ -17,6 +17,8 @@ import {
   User,
   MessageTypes
 } from 'oceanic.js'
+
+import { TextChannel } from './structures/TextChannel'
 
 export class Client extends OceanicClient {
   fakeApplication = new ClientApplication({
@@ -87,7 +89,7 @@ export class Client extends OceanicClient {
     voice_states: []
   }, this)
 
-  private readonly _fakeUserRaw = {
+  _fakeUserRaw = {
     avatar: 'avatar_blob',
     discriminator: '1234',
     id: 'test_user',
@@ -99,6 +101,10 @@ export class Client extends OceanicClient {
 
   get application (): ClientApplication {
     return this.fakeApplication
+  }
+
+  getChannel<T extends AnyChannel = AnyChannel> (id: string): T | undefined {
+    return this.fakeChannel as unknown as T
   }
 
   sendFakeMessage (content: string): void {
