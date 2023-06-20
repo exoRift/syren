@@ -12,7 +12,10 @@ import {
   VerificationLevels,
   ApplicationCommandTypes,
   InteractionTypes,
-  ClientApplication
+  ClientApplication,
+  Message,
+  User,
+  MessageTypes
 } from 'oceanic.js'
 
 export class Client extends OceanicClient {
@@ -20,10 +23,6 @@ export class Client extends OceanicClient {
     id: 'application',
     flags: 0
   }, this)
-
-  get application (): ClientApplication {
-    return this.fakeApplication
-  }
 
   fakeChannel = new TextChannel({
     type: ChannelTypes.GUILD_TEXT,
@@ -88,6 +87,41 @@ export class Client extends OceanicClient {
     voice_states: []
   }, this)
 
+  private readonly _fakeUserRaw = {
+    avatar: 'avatar_blob',
+    discriminator: '1234',
+    id: 'test_user',
+    username: 'test user',
+    public_flags: 0
+  }
+
+  fakeUser = new User(this._fakeUserRaw, this)
+
+  get application (): ClientApplication {
+    return this.fakeApplication
+  }
+
+  sendFakeMessage (content: string): void {
+    const message = new Message({
+      attachments: [],
+      author: this._fakeUserRaw,
+      channel_id: 'test_channel',
+      content,
+      edited_timestamp: 'ts',
+      embeds: [],
+      id: 'test_message',
+      mention_everyone: false,
+      mention_roles: [],
+      mentions: [],
+      pinned: false,
+      timestamp: 'ts',
+      tts: false,
+      type: MessageTypes.DEFAULT
+    }, this)
+
+    this.emit('messageCreate', message)
+  }
+
   sendFakeInteraction (): void {
     const interaction = new CommandInteraction({
       application_id: 'test_application',
@@ -97,13 +131,7 @@ export class Client extends OceanicClient {
         type: ApplicationCommandTypes.CHAT_INPUT,
         guild_id: 'test_guild'
       },
-      user: {
-        avatar: 'avatar_blob',
-        discriminator: '1234',
-        id: 'test_user',
-        username: 'test user',
-        public_flags: 0
-      },
+      user: this._fakeUserRaw,
       id: 'test_command',
       token: 'test_token',
       type: InteractionTypes.APPLICATION_COMMAND,

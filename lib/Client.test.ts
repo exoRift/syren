@@ -16,3 +16,11 @@ test('command ran', (t) => {
 
   t.context.client.sendFakeInteraction()
 })
+
+test('message sent', (t) => {
+  t.context.client.once('messageCreate', (msg) => {
+    t.is(msg.content, 'content')
+  })
+
+  t.context.client.sendFakeMessage('content')
+})
