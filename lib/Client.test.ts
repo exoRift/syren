@@ -14,7 +14,7 @@ test.before((t) => {
 test('command ran', (t) => {
   t.context.client.once('interactionCreate', () => t.pass('interaction registered'))
 
-  t.context.client.sendFakeInteraction()
+  t.context.client.sendFakeCommand()
 })
 
 test.todo('command response')

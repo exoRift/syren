@@ -8,7 +8,7 @@
     "dist/"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "rm -r dist/ && tsc",
     "prepublish": "npm run build",
     "lint": "eslint ./ && tsc --noEmit",
     "test": "nyc --reporter lcov ava --verbose **/*.test.ts",

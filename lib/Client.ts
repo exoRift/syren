@@ -112,7 +112,7 @@ export class Client extends OceanicClient {
     this.emit('messageCreate', message)
   }
 
-  sendFakeInteraction (): void {
+  sendFakeCommand (): void {
     const interaction = new CommandInteraction({
       application_id: this.application.id,
       channel_id: this.fakeChannel.id,
