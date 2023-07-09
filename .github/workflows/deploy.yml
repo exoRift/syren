@@ -1,0 +1,99 @@
+name: Publish Update
+
+on:
+  release:
+    types:
+      - created
+  workflow_dispatch:
+
+jobs:
+  docsite:
+    name: Update Docsite
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node: [18.x]
+        pnpm: [8.x]
+        packager: [pnpm]
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    runs-on: ${{ matrix.os }}
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    concurrency:
+      group: pages
+      cancel-in-progress: true
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ matrix.pnpm }}
+      - name: Set up Node
+        id: setup
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+          cache: ${{ matrix.packager }}
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+      - name: Install Dependencies
+        run: pnpm i
+      - name: Build Resources
+        run: pnpm run build-docs
+      - name: Upload Static Artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: './docs/'
+      - name: Deploy Docsite to Github Pages
+        id: deploy
+        uses: actions/deploy-pages@v2
+
+  package:
+    name: Publish to NPM
+
+    if: ${{ github.event_name == 'release' }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node: [18.x]
+        pnpm: [8.x]
+        packager: [pnpm]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ matrix.pnpm }}
+      - name: Set up Node
+        id: setup
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+          cache: ${{ matrix.packager }}
+      - name: Install Dependencies
+        run: pnpm i
+      - name: Build Resources
+        run: pnpm run build
+      - name: Publish to NPM
+        uses: JS-DevTools/npm-publish@v1
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+      - name: Upload Package Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: './dist/'
