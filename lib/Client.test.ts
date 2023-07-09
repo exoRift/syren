@@ -1,11 +1,18 @@
 import protoTest, { type TestFn } from 'ava'
 import { Client } from './Client'
-import { type TextChannel, type Guild } from 'oceanic.js'
+import { type TextChannel } from './structures/TextChannel'
+import {
+  type Guild,
+  ApplicationCommandTypes,
+  type ApplicationCommand,
+  CommandInteraction
+} from 'oceanic.js'
 
 interface Context {
   client: Client
   guild: Guild
   channel: TextChannel
+  command: ApplicationCommand
 }
 
 const test = protoTest as TestFn<Context>
@@ -14,13 +21,22 @@ test.before((t) => {
   t.context.client = new Client()
   t.context.guild = t.context.client.syren.createGuild()
   t.context.channel = t.context.client.getChannel<TextChannel>(t.context.guild.id)!
+  t.context.command = t.context.client.syren.registerCommand({
+    name: 'command',
+    description: 'A test command',
+    type: ApplicationCommandTypes.CHAT_INPUT
+  })
 })
 
-test.todo('command ran'/* , (t) => {
-  t.context.client.once('interactionCreate', () => t.pass('interaction registered'))
+test('command ran', (t) => {
+  t.context.client.once('interactionCreate', (interaction) => {
+    t.assert(interaction instanceof CommandInteraction)
 
-  t.context.client.sendFakeCommand()
-} */)
+    t.is((interaction as CommandInteraction).data.name, t.context.command.name)
+  })
+
+  t.context.client.syren.callCommand(t.context.channel, t.context.client.user, t.context.command.name)
+})
 
 test.todo('command response')
 

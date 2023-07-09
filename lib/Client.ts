@@ -13,12 +13,19 @@ import {
   type RawTextChannel,
   type RawGuild,
   Shard,
-  type RawGuildChannel,
   ExtendedUser,
   type RawOAuthUser,
   type CreateMessageOptions,
   type Message,
-  type AnyTextableChannel
+  type AnyTextableChannel,
+  CommandInteraction,
+  type RawApplicationCommandInteraction,
+  type CreateApplicationCommandOptions,
+  ApplicationCommand,
+  type RawApplicationCommand,
+  type CreateChatInputApplicationCommandOptions,
+  type InteractionOptions,
+  InteractionTypes
 } from 'oceanic.js'
 
 import { TextChannel } from './structures/TextChannel'
@@ -49,6 +56,7 @@ export class Client extends OceanicClient {
     guilds: new Map<string, Guild>(),
     textChannels: new Map<string, TextChannel>(),
     users: new Map<string, User>(),
+    commands: [] as ApplicationCommand[],
 
     async connect (): Promise<void> {
       this.client.shards.set(this.shard.id, this.shard)
@@ -176,27 +184,59 @@ export class Client extends OceanicClient {
       this.client.emit('messageCreate', message)
 
       return message
-    }/* ,
+    },
 
-    callCommand (): void {
-      const interaction = new CommandInteraction({
+    registerCommand (input: CreateApplicationCommandOptions): ApplicationCommand {
+      const id = Date.now().toString()
+
+      const data: RawApplicationCommand = {
         application_id: this.application.id,
-        channel_id: this.fakeChannel.id,
+        default_member_permissions: null,
+        version: '1',
+        id,
+        ...input as CreateChatInputApplicationCommandOptions
+      }
+
+      const command = new ApplicationCommand(data, this.client)
+
+      this.commands.push(command)
+
+      return command
+    },
+
+    callCommand (channel: TextChannel, user: User, name: string, options?: InteractionOptions[]): CommandInteraction {
+      const command = this.commands.find((c) => c.name === name)
+
+      if (!command) throw Error('Tried to call a non-existent command')
+
+      const id = Date.now().toString()
+
+      const data: RawApplicationCommandInteraction = {
+        application_id: this.application.id,
+        channel_id: channel.id,
         data: {
-          id: 'test_command',
-          name: 'command',
-          type: ApplicationCommandTypes.CHAT_INPUT,
-          guild_id: this.fakeGuild.id
+          id: command.id,
+          name,
+          type: command.type,
+          guild_id: channel.guildID,
+          options
         },
-        user: this._fakeUserRaw,
-        id: 'test_command',
-        token: 'test_token',
+        user: {
+          public_flags: 0,
+          ...user
+        },
+        id,
+        token: 'FAKE TOKEN',
         type: InteractionTypes.APPLICATION_COMMAND,
         version: 1
-      }, this)
+      }
 
-      this.emit('interactionCreate', interaction)
-    } */
+      const interaction = new CommandInteraction(data, this.client)
+
+      this.client.emit('interactionCreate', interaction)
+
+      return interaction
+    }
   }
 
   private readonly _self = new ExtendedUser(this.syren.selfUserRaw, this)
