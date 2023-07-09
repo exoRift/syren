@@ -9,6 +9,7 @@
   ],
   "scripts": {
     "build": "rm -rf dist/ && tsc",
+    "build-docs": "typedoc",
     "lint": "eslint ./ && tsc --noEmit",
     "test": "nyc --reporter lcov ava --verbose **/*.test.ts",
     "test-watch": "nyc --reporter lcov ava --verbose --watch **/*.test.ts"
@@ -64,6 +65,7 @@
     "eslint-config-standard-with-typescript": "^35.0.0",
     "nyc": "^15.1.0",
     "ts-node": "^10.9.1",
+    "typedoc": "^0.24.8",
     "typescript": "^5.1.3"
   }
 }

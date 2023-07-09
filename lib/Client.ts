@@ -31,7 +31,13 @@ import {
 
 import { TextChannel } from './structures/TextChannel'
 
+/**
+ * An augmented version of the {@link https://docs.oceanic.ws/v1.7.1 Oceanic.JS} client
+ */
 export class Client extends OceanicClient {
+  /**
+   * Mocking utilities
+   */
   syren = {
     client: this as OceanicClient,
     application: new ClientApplication({
