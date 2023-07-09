@@ -28,17 +28,21 @@ test.before((t) => {
   })
 })
 
+test('connecting', async (t) => {
+  await t.context.client.syren.connect()
+
+  t.is(t.context.client.users.get(t.context.client.user.id)?.id, t.context.client.user.id, 'self user created')
+})
+
 test('command ran', (t) => {
   t.context.client.once('interactionCreate', (interaction) => {
-    t.assert(interaction instanceof CommandInteraction)
+    t.assert(interaction instanceof CommandInteraction, 'command instance')
 
-    t.is((interaction as CommandInteraction).data.name, t.context.command.name)
+    t.is((interaction as CommandInteraction).data.name, t.context.command.name, 'command name matches')
   })
 
   t.context.client.syren.callCommand(t.context.channel, t.context.client.user, t.context.command.name)
 })
-
-test.todo('command response')
 
 test('message sent', (t) => {
   t.context.client.once('messageCreate', (msg) => {

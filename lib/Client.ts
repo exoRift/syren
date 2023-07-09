@@ -25,7 +25,8 @@ import {
   type RawApplicationCommand,
   type CreateChatInputApplicationCommandOptions,
   type InteractionOptions,
-  InteractionTypes
+  InteractionTypes,
+  type RawMember
 } from 'oceanic.js'
 
 import { TextChannel } from './structures/TextChannel'
@@ -58,6 +59,9 @@ export class Client extends OceanicClient {
     users: new Map<string, User>(),
     commands: [] as ApplicationCommand[],
 
+    /**
+     * "Connect" to the Discord API
+     */
     async connect (): Promise<void> {
       this.client.shards.set(this.shard.id, this.shard)
       this.client.users.add(this.client.user)
@@ -66,8 +70,22 @@ export class Client extends OceanicClient {
       this.client.emit('ready')
     },
 
+    /**
+     * Create a guild
+     * @param   input The guild data
+     * @returns       The resulting guild obj
+     * @todo          Create the default role
+     */
     createGuild (input?: Partial<RawGuild>): Guild {
       const id = input?.id ?? Date.now().toString()
+
+      const selfMember: RawMember = {
+        user: this.selfUserRaw,
+        deaf: false,
+        joined_at: Date.now().toString(),
+        mute: false,
+        roles: [id] // Default role
+      }
 
       const defaultChannelRaw: RawTextChannel = {
         guild_id: id,
@@ -103,11 +121,11 @@ export class Client extends OceanicClient {
         joined_at: Date.now().toString(),
         large: false,
         member_count: 1,
-        members: [], // TODO: add self as member
+        members: [selfMember],
         mfa_level: MFALevels.NONE,
         name: 'default guild name',
         nsfw_level: GuildNSFWLevels.DEFAULT,
-        owner_id: this.client.user.id, // TODO: construct self
+        owner_id: this.client.user.id,
         preferred_locale: 'en-us',
         premium_progress_bar_enabled: false,
         premium_tier: PremiumTiers.NONE,
@@ -139,6 +157,11 @@ export class Client extends OceanicClient {
       return guild
     },
 
+    /**
+     * Create a guild text channel
+     * @param   input The channel data
+     * @returns       The resulting channel obj
+     */
     createGuildTextChannel (input?: Partial<RawTextChannel>): TextChannel {
       const guildId = input?.guild_id ?? Date.now().toString()
       const id = input?.id ?? (Date.now() + 1).toString() // Ensure IDs don't match
@@ -174,10 +197,20 @@ export class Client extends OceanicClient {
       return channel
     },
 
+    /**
+     * @todo
+     */
     createUser () {
 
     },
 
+    /**
+     * Send a message as a user
+     * @param   channel The channel to send the message in
+     * @param   options The message options
+     * @returns         The resulting message obj
+     * @todo            Allow choosing the author
+     */
     async sendMessage (channel: AnyTextableChannel, options: CreateMessageOptions): Promise<Message> {
       const message = await channel.createMessage(options)
 
@@ -186,6 +219,11 @@ export class Client extends OceanicClient {
       return message
     },
 
+    /**
+     * Register a command to be called
+     * @param   input The options
+     * @returns       The resulting command obj
+     */
     registerCommand (input: CreateApplicationCommandOptions): ApplicationCommand {
       const id = Date.now().toString()
 
@@ -204,6 +242,14 @@ export class Client extends OceanicClient {
       return command
     },
 
+    /**
+     * Run a command
+     * @param   channel The channel to run the command in
+     * @param   user    The user who ran the command
+     * @param   name    The name of the command (errors if not registered prior)
+     * @param   options The options supplied to the command
+     * @returns         The resulting command obj
+     */
     callCommand (channel: TextChannel, user: User, name: string, options?: InteractionOptions[]): CommandInteraction {
       const command = this.commands.find((c) => c.name === name)
 
@@ -248,8 +294,4 @@ export class Client extends OceanicClient {
   get user (): ExtendedUser {
     return this._self
   }
-
-  // getChannel<T extends AnyChannel = AnyChannel> (id: string): T | undefined {
-  //   return this.syren.textChannels.get(id) as T | undefined
-  // }
 }
