@@ -3,7 +3,8 @@ import {
   type RawAttachment,
   TextChannel as OTextChannel,
   Message,
-  MessageTypes
+  MessageTypes,
+  type RawMessage
 } from 'oceanic.js'
 
 import { type Client } from '../Client'
@@ -12,36 +13,40 @@ export class TextChannel extends OTextChannel {
   client!: Client
 
   async createMessage (options: CreateMessageOptions): Promise<Message<OTextChannel>> {
-    const message = new Message<TextChannel>({
-      attachments: options.attachments?.map((a) => ({
-        filename: a.filename ?? 'file',
+    const id = Date.now().toString()
+
+    const data: RawMessage = {
+      attachments: options.attachments?.map((a, i) => ({
+        filename: a.filename ?? 'attachment_' + i.toString(),
         id: a.id,
-        proxy_url: 'test_url',
+        proxy_url: 'attachment_proxy_url',
         size: 0,
-        url: 'test_url',
+        url: 'attachment_url',
         description: a.description
-      } satisfies RawAttachment)).concat(options.files?.map((f) => ({
+      } satisfies RawAttachment)).concat(options.files?.map((f, i) => ({
         filename: f.name,
-        id: 'raw_file_' + Date.now().toString(),
-        proxy_url: 'test_url',
+        id: 'file_' + i.toString(),
+        proxy_url: 'file_proxy_url',
         size: 0,
-        url: 'test_url',
+        url: 'file_url',
         description: undefined
       } satisfies RawAttachment)) ?? []) ?? [],
-      author: this.client._fakeUserRaw,
+      author: this.client.syren.selfUserRaw,
       channel_id: this.id,
       content: options.content ?? '',
-      edited_timestamp: 'ts',
+      edited_timestamp: null,
       embeds: [],
-      id: 'test_message_' + Date.now().toString(),
+      id,
       mention_everyone: false,
       mention_roles: [],
       mentions: [],
       pinned: false,
-      timestamp: 'ts',
+      timestamp: id,
       tts: false,
       type: MessageTypes.DEFAULT
-    }, this.client)
+    }
+
+    const message = new Message<TextChannel>(data, this.client)
 
     this.messages.add(message)
 

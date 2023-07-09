@@ -6,24 +6,27 @@ Syren is a small library to assist in testing expected interactions with the Dis
 import protoTest, { type TestFn } from 'ava'
 import { spy, match } from 'sinon'
 import { Client } from 'syren'
+import { type TextChannel } from 'oceanic.js'
 
 interface Context {
   client: Client
+  channel: TextChannel
 }
 
 const test = protoTest as TestFn<Context>
 
 test.before((t) => {
   t.context.client = new Client()
+  t.context.channel = t.context.client.createChannel()
 })
 
 test('ping command', async (t) => {
-  const spy = spy(t.context.client.fakeChannel, 'createMessage')
+  const spy = spy(t.context.channel, 'createMessage')
 
   // register your ping command here
   // ...
 
-  await t.context.client.sendFakeMessage({
+  await t.context.client.syren.sendMessage({
     content: '!ping'
   })
 

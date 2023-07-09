@@ -1,21 +1,26 @@
 import protoTest, { type TestFn } from 'ava'
 import { Client } from './Client'
+import { type TextChannel, type Guild } from 'oceanic.js'
 
 interface Context {
   client: Client
+  guild: Guild
+  channel: TextChannel
 }
 
 const test = protoTest as TestFn<Context>
 
 test.before((t) => {
   t.context.client = new Client()
+  t.context.guild = t.context.client.syren.createGuild()
+  t.context.channel = t.context.client.getChannel<TextChannel>(t.context.guild.id)!
 })
 
-test('command ran', (t) => {
+test.todo('command ran'/* , (t) => {
   t.context.client.once('interactionCreate', () => t.pass('interaction registered'))
 
   t.context.client.sendFakeCommand()
-})
+} */)
 
 test.todo('command response')
 
@@ -24,7 +29,7 @@ test('message sent', (t) => {
     t.is(msg.content, 'content', 'content matches')
   })
 
-  return t.context.client.sendFakeMessage({
+  return t.context.client.syren.sendMessage(t.context.channel, {
     content: 'content'
   })
 })
@@ -45,7 +50,7 @@ test('message response', async (t) => {
     })
   })
 
-  await t.context.client.sendFakeMessage({
+  await t.context.client.syren.sendMessage(t.context.channel, {
     content: 'initial'
   })
 

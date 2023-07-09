@@ -1,5 +1,1 @@
-import { Client } from './Client'
-
-export {
-  Client
-}
+export { Client } from './Client'
