@@ -25,7 +25,7 @@ const test = protoTest as TestFn<Context>
 
 test.before((t) => {
   t.context.client = new Client()
-  t.context.channel = t.context.client.createChannel()
+  t.context.channel = t.context.client.syren.createChannel()
 })
 
 test('ping command', async (t) => {
