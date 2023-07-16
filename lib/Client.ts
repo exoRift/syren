@@ -8,8 +8,7 @@ import {
   GuildNSFWLevels,
   PremiumTiers,
   VerificationLevels,
-  ClientApplication,
-  type User,
+  ClientApplication, User,
   type RawTextChannel,
   type RawGuild,
   Shard,
@@ -25,7 +24,8 @@ import {
   type InteractionOptions,
   InteractionTypes,
   type RawMember,
-  type TextChannel as OTextChannel
+  type TextChannel as OTextChannel,
+  type RawUser
 } from 'oceanic.js'
 
 import { TextChannel } from './structures/TextChannel'
@@ -204,22 +204,40 @@ export class Syren {
     return channel
   }
 
-  /**
-   * @todo
-   */
-  createUser () {
+  createUser (input?: Partial<RawUser>): User {
+    const data: RawUser = {
+      id: Date.now().toString(),
+      avatar: null,
+      discriminator: '0',
+      public_flags: 0,
+      username: 'default user name',
+      ...input
+    }
 
+    const user = new User(data, this.client)
+
+    this.users.set(user.id, user)
+
+    return user
   }
 
   /**
    * Send a message as a user
    * @param   channel The channel to send the message in
    * @param   options The message options
+   * @param   author  The ID of the user whom authored this message
    * @returns         The resulting message obj
-   * @todo            Allow choosing the author
    */
-  async sendMessage (channel: TextChannel, options: CreateMessageOptions): Promise<Message<OTextChannel>> {
-    const message = await channel.createMessage(options)
+  async sendMessage (channel: TextChannel, options: CreateMessageOptions, authorID?: string): Promise<Message<OTextChannel>> {
+    let author
+
+    if (authorID) {
+      if (!this.users.has(authorID)) throw Error('could not find user with that ID')
+
+      author = this.users.get(authorID)
+    }
+
+    const message = await channel.createMessage(options, author)
 
     this.client.emit('messageCreate', message)
 
@@ -274,10 +292,7 @@ export class Syren {
         guild_id: channel.guildID,
         options
       },
-      user: {
-        public_flags: 0,
-        ...user
-      },
+      user: this.rawFromUser(user),
       id,
       token: 'FAKE TOKEN',
       type: InteractionTypes.APPLICATION_COMMAND,
@@ -289,6 +304,13 @@ export class Syren {
     this.client.emit('interactionCreate', interaction)
 
     return interaction
+  }
+
+  rawFromUser (user: User | RawUser): RawUser {
+    return {
+      ...user,
+      public_flags: user instanceof User ? user.publicFlags : user.public_flags
+    }
   }
 }
 

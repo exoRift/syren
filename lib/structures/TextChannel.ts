@@ -3,7 +3,9 @@ import {
   type RawAttachment,
   TextChannel as OTextChannel,
   MessageTypes,
-  type RawMessage
+  type RawMessage,
+  type User,
+  type RawUser
 } from 'oceanic.js'
 
 import { Message } from './Message'
@@ -12,7 +14,7 @@ import { type Client } from '../Client'
 export class TextChannel extends OTextChannel {
   declare client: Client
 
-  async createMessage (options: CreateMessageOptions): Promise<Message<OTextChannel>> {
+  async createMessage (options: CreateMessageOptions, author?: User | RawUser): Promise<Message<OTextChannel>> {
     const id = Date.now().toString()
 
     const data: RawMessage = {
@@ -31,7 +33,7 @@ export class TextChannel extends OTextChannel {
         url: 'file_url',
         description: undefined
       } satisfies RawAttachment)) ?? []) ?? [],
-      author: this.client.syren.selfUserRaw,
+      author: author ? this.client.syren.rawFromUser(author) : this.client.syren.selfUserRaw,
       channel_id: this.id,
       content: options.content ?? '',
       edited_timestamp: null,
