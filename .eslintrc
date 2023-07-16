@@ -30,5 +30,6 @@
     "@typescript-eslint/explicit-function-return-type": "warn",
     "@typescript-eslint/method-signature-style": "off",
     "@typescript-eslint/no-non-null-assertion": "warn"
-  }
+  },
+  "ignorePatterns": ["dist/", "docs/"]
 }
