@@ -3,7 +3,8 @@ import {
   Message as OMessage,
   type User,
   type AnyTextableChannel,
-  type Uncached
+  type Uncached,
+  type RawUser
 } from 'oceanic.js'
 
 import { type Client } from '../Client'
@@ -12,18 +13,22 @@ export class Message<T extends AnyTextableChannel | Uncached = AnyTextableChanne
   protected _reactions: Record<string, Set<string>> = {}
   declare client: Client
 
-  async createReaction (emoji: string): Promise<void> {
-    if (!this._reactions[emoji]) this._reactions[emoji] = new Set()
+  async createReaction (emoji: string, user?: User | RawUser): Promise<void> {
+    const userID = user?.id ?? this.client.user.id
+    const isSelf = userID === this.client.user.id
 
-    this._reactions[emoji].add(this.client.user.id)
+    if (!this._reactions[emoji]) this._reactions[emoji] = new Set()
+    const unique = this._reactions[emoji].has(userID)
+    this._reactions[emoji].add(userID)
+
     if (!this.reactions[emoji]) {
       this.reactions[emoji] = {
         count: 1,
-        me: true
+        me: isSelf
       }
-    } else {
+    } else if (unique) {
       ++this.reactions[emoji].count
-      this.reactions[emoji].me = true
+      this.reactions[emoji].me = isSelf
     }
   }
 
@@ -31,13 +36,13 @@ export class Message<T extends AnyTextableChannel | Uncached = AnyTextableChanne
    * @todo Throw(?) if the bot does not have the permissions
    */
   async deleteReaction (emoji: string, user = this.client.user.id): Promise<void> {
-    if (this._reactions[emoji]) {
-      this._reactions[emoji].delete(user)
-    }
+    const isSelf = user === this.client.user.id
+
+    if (this._reactions[emoji]) this._reactions[emoji].delete(user)
 
     if (this.reactions[emoji]) {
       --this.reactions[emoji].count
-      this.reactions[emoji].me = false
+      this.reactions[emoji].me &&= !isSelf
     }
   }
 

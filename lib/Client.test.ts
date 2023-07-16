@@ -5,22 +5,25 @@ import {
   type Guild,
   ApplicationCommandTypes,
   type ApplicationCommand,
-  CommandInteraction
+  CommandInteraction,
+  type User
 } from 'oceanic.js'
 
 interface Context {
   client: Client
   guild: Guild
   channel: TextChannel
+  user: User
   command: ApplicationCommand
 }
 
 const test = protoTest as TestFn<Context>
 
-test.before((t) => {
+test.beforeEach((t) => {
   t.context.client = new Client()
   t.context.guild = t.context.client.syren.createGuild()
   t.context.channel = t.context.client.getChannel<TextChannel>(t.context.guild.id)!
+  t.context.user = t.context.client.syren.createUser()
   t.context.command = t.context.client.syren.registerCommand({
     name: 'command',
     description: 'A test command',
@@ -41,7 +44,7 @@ test('command ran', (t) => {
     t.is((interaction as CommandInteraction).data.name, t.context.command.name, 'command name matches')
   })
 
-  t.context.client.syren.callCommand(t.context.channel, t.context.client.user, t.context.command.name)
+  t.context.client.syren.callSlashCommand(t.context.channel, t.context.client.user, t.context.command.name)
 })
 
 test('message sent', (t) => {
@@ -52,6 +55,17 @@ test('message sent', (t) => {
   return t.context.client.syren.sendMessage(t.context.channel, {
     content: 'content'
   })
+})
+
+test('custom message author', (t) => {
+  t.context.client.once('messageCreate', (msg) => {
+    console.log(t.context.user, msg.author)
+    t.is(msg.author.id, t.context.user.id, 'author id matches')
+  })
+
+  return t.context.client.syren.sendMessage(t.context.channel, {
+    content: 'content'
+  }, t.context.user)
 })
 
 test('message response', async (t) => {
@@ -82,3 +96,11 @@ test('create channel without guild', (t) => {
 
   t.is(t.context.client.channelGuildMap[channel.id], channel.guildID)
 })
+
+test.todo('reaction add')
+
+test.todo('reaction remove')
+
+test.todo('remove all reactions of emoji')
+
+test.todo('remove all reactions')

@@ -170,19 +170,19 @@ export class Syren {
    * @returns       The resulting channel obj
    */
   createGuildTextChannel (input?: Partial<RawTextChannel>): TextChannel {
-    const guildId = input?.guild_id ?? Date.now().toString()
+    const guildID = input?.guild_id ?? Date.now().toString()
     const id = input?.id ?? (Date.now() + 1).toString() // Ensure IDs don't match
 
-    if (!this.client.channelGuildMap[guildId]) {
+    if (!this.client.channelGuildMap[guildID]) {
       console.warn('[SYREN]', 'Created a guild text channel without a guild. Creating a default guild...')
 
-      this.createGuild({ id: guildId })
+      this.createGuild({ id: guildID })
     }
 
     const data: RawTextChannel = {
       type: ChannelTypes.GUILD_TEXT,
       id,
-      guild_id: guildId,
+      guild_id: guildID,
       default_auto_archive_duration: 60,
       last_message_id: null,
       last_pin_timestamp: null,
@@ -225,23 +225,61 @@ export class Syren {
    * Send a message as a user
    * @param   channel The channel to send the message in
    * @param   options The message options
-   * @param   author  The ID of the user whom authored this message
+   * @param   author  The user who authored this message
    * @returns         The resulting message obj
    */
-  async sendMessage (channel: TextChannel, options: CreateMessageOptions, authorID?: string): Promise<Message<OTextChannel>> {
-    let author
-
-    if (authorID) {
-      if (!this.users.has(authorID)) throw Error('could not find user with that ID')
-
-      author = this.users.get(authorID)
-    }
-
+  async sendMessage (channel: TextChannel, options: CreateMessageOptions, author?: User): Promise<Message<OTextChannel>> {
     const message = await channel.createMessage(options, author)
 
     this.client.emit('messageCreate', message)
 
     return message
+  }
+
+  /**
+   * Add a reaction to a message
+   * NOTE: This will not work with custom emojis (Emit the event yourself if needed)
+   * @param message The message to react to
+   * @param emoji   The emoji to react with
+   * @param user    The user who added the reaction
+   */
+  async addReaction (message: Message, emoji: string, user?: User): Promise<void> {
+    await message.createReaction(emoji, user)
+
+    this.client.emit('messageReactionAdd', message, user ?? this.client.user, {
+      id: null,
+      name: emoji,
+      animated: false
+    })
+  }
+
+  /**
+   * Remove a reaction from a message
+   * NOTE: This will not work with custom emojis (Emit the event yourself if needed)
+   * @param message The message to remove the reaction from
+   * @param emoji   The emoji to remove
+   * @param user    The whom the reaction belonged to
+   */
+  async removeReaction (message: Message, emoji: string, user?: User): Promise<void> {
+    await message.deleteReaction(emoji, user?.id ?? this.client.user.id)
+
+    this.client.emit('messageReactionRemove', message, user ?? this.client.user, {
+      id: null,
+      name: emoji,
+      animated: false
+    })
+  }
+
+  async removeAllReactions (message: Message, emoji?: string): Promise<void> {
+    await message.deleteReactions(emoji)
+
+    if (emoji) {
+      this.client.emit('messageReactionRemoveEmoji', message, {
+        id: null,
+        name: emoji,
+        animated: false
+      })
+    } else this.client.emit('messageReactionRemoveAll', message)
   }
 
   /**
@@ -275,7 +313,7 @@ export class Syren {
    * @param   options The options supplied to the command
    * @returns         The resulting command obj
    */
-  callCommand (channel: TextChannel, user: User, name: string, options?: InteractionOptions[]): CommandInteraction {
+  callSlashCommand (channel: TextChannel, user: User, name: string, options?: InteractionOptions[]): CommandInteraction {
     const command = this.commands.find((c) => c.name === name)
 
     if (!command) throw Error('Tried to call a non-existent command')
