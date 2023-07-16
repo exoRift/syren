@@ -76,3 +76,9 @@ test('message response', async (t) => {
 
   return await promise
 })
+
+test('create channel without guild', (t) => {
+  const channel = t.context.client.syren.createGuildTextChannel()
+
+  t.is(t.context.client.channelGuildMap[channel.id], channel.guildID)
+})

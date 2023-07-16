@@ -2,15 +2,15 @@ import {
   type CreateMessageOptions,
   type RawAttachment,
   TextChannel as OTextChannel,
-  Message,
   MessageTypes,
   type RawMessage
 } from 'oceanic.js'
 
+import { Message } from './Message'
 import { type Client } from '../Client'
 
 export class TextChannel extends OTextChannel {
-  client!: Client
+  declare client: Client
 
   async createMessage (options: CreateMessageOptions): Promise<Message<OTextChannel>> {
     const id = Date.now().toString()
@@ -46,7 +46,7 @@ export class TextChannel extends OTextChannel {
       type: MessageTypes.DEFAULT
     }
 
-    const message = new Message<TextChannel>(data, this.client)
+    const message = new Message<OTextChannel>(data, this.client)
 
     this.messages.add(message)
 

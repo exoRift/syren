@@ -1,2 +1,3 @@
-export { Client } from './Client'
-export { TextChannel } from './structures/TextChannel'
+export * from './Client'
+export * from './structures/TextChannel'
+export * from './structures/Message'
