@@ -32,12 +32,16 @@ test.beforeEach((t) => {
 })
 
 test('connecting', async (t) => {
+  t.plan(1)
+
   await t.context.client.syren.connect()
 
   t.is(t.context.client.users.get(t.context.client.user.id)?.id, t.context.client.user.id, 'self user created')
 })
 
 test('command ran', (t) => {
+  t.plan(2)
+
   t.context.client.once('interactionCreate', (interaction) => {
     t.assert(interaction instanceof CommandInteraction, 'command instance')
 
@@ -48,6 +52,8 @@ test('command ran', (t) => {
 })
 
 test('message sent', (t) => {
+  t.plan(1)
+
   t.context.client.once('messageCreate', (msg) => {
     t.is(msg.content, 'content', 'content matches')
   })
@@ -58,6 +64,8 @@ test('message sent', (t) => {
 })
 
 test('custom message author', (t) => {
+  t.plan(1)
+
   t.context.client.once('messageCreate', (msg) => {
     t.is(msg.author.id, t.context.user.id, 'author ID matches')
   })
@@ -68,6 +76,8 @@ test('custom message author', (t) => {
 })
 
 test('message response', async (t) => {
+  t.plan(2)
+
   const promise = new Promise((resolve) => {
     t.context.client.once('messageCreate', (msg) => {
       msg.channel?.createMessage({
@@ -91,6 +101,8 @@ test('message response', async (t) => {
 })
 
 test('create channel without guild', (t) => {
+  t.plan(2)
+
   const channel = t.context.client.syren.createGuildTextChannel()
 
   t.is(t.context.client.channelGuildMap[channel.id], channel.guildID, 'channel mapped correctly')
@@ -98,6 +110,8 @@ test('create channel without guild', (t) => {
 })
 
 test('reaction add', async (t) => {
+  t.plan(3)
+
   const target = await t.context.channel.createMessage({ content: 'content' })
 
   t.context.client.once('messageReactionAdd', (msg, reactor, reaction) => {
