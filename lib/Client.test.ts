@@ -44,7 +44,7 @@ test('command ran', (t) => {
     t.is((interaction as CommandInteraction).data.name, t.context.command.name, 'command name matches')
   })
 
-  t.context.client.syren.callSlashCommand(t.context.channel, t.context.client.user, t.context.command.name)
+  return t.context.client.syren.callSlashCommand(t.context.channel, t.context.client.user, t.context.command.name)
 })
 
 test('message sent', (t) => {
@@ -59,8 +59,7 @@ test('message sent', (t) => {
 
 test('custom message author', (t) => {
   t.context.client.once('messageCreate', (msg) => {
-    console.log(t.context.user, msg.author)
-    t.is(msg.author.id, t.context.user.id, 'author id matches')
+    t.is(msg.author.id, t.context.user.id, 'author ID matches')
   })
 
   return t.context.client.syren.sendMessage(t.context.channel, {
@@ -75,7 +74,7 @@ test('message response', async (t) => {
         content: 'response'
       })
         .then((response) => {
-          t.is(response.content, 'response')
+          t.is(response.content, 'response', 'content matches')
 
           t.assert(response.channel.messages.has(response.id), 'response message exists')
         })
@@ -94,10 +93,21 @@ test('message response', async (t) => {
 test('create channel without guild', (t) => {
   const channel = t.context.client.syren.createGuildTextChannel()
 
-  t.is(t.context.client.channelGuildMap[channel.id], channel.guildID)
+  t.is(t.context.client.channelGuildMap[channel.id], channel.guildID, 'channel mapped correctly')
+  t.true(channel.guild.channels.has(channel.id), 'guild contains channel')
 })
 
-test.todo('reaction add')
+test('reaction add', async (t) => {
+  const target = await t.context.channel.createMessage({ content: 'content' })
+
+  t.context.client.once('messageReactionAdd', (msg, reactor, reaction) => {
+    t.is(msg.id, target.id, 'message ID matches')
+    t.is(reactor.id, t.context.client.user.id, 'user ID matches')
+    t.is(reaction.name, '💀', 'emoji matches')
+  })
+
+  return await t.context.client.syren.addReaction(target, '💀')
+})
 
 test.todo('reaction remove')
 

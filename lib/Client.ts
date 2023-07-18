@@ -199,6 +199,7 @@ export class Syren {
     const channel = new TextChannel(data, this.client)
 
     this.textChannels.set(channel.id, channel)
+    channel.guild.channels.set(channel.id, channel)
     this.client.channelGuildMap[channel.id] = channel.guildID
 
     return channel
@@ -219,6 +220,29 @@ export class Syren {
     this.users.set(user.id, user)
 
     return user
+  }
+
+  /**
+   * Register a command to be called
+   * @param   input The options
+   * @returns       The resulting command obj
+   */
+  registerCommand (input: CreateApplicationCommandOptions): ApplicationCommand {
+    const id = Date.now().toString()
+
+    const data: RawApplicationCommand = {
+      application_id: this.application.id,
+      default_member_permissions: null,
+      version: '1',
+      id,
+      ...input as CreateChatInputApplicationCommandOptions
+    }
+
+    const command = new ApplicationCommand(data, this.client)
+
+    this.commands.push(command)
+
+    return command
   }
 
   /**
@@ -283,29 +307,6 @@ export class Syren {
   }
 
   /**
-   * Register a command to be called
-   * @param   input The options
-   * @returns       The resulting command obj
-   */
-  registerCommand (input: CreateApplicationCommandOptions): ApplicationCommand {
-    const id = Date.now().toString()
-
-    const data: RawApplicationCommand = {
-      application_id: this.application.id,
-      default_member_permissions: null,
-      version: '1',
-      id,
-      ...input as CreateChatInputApplicationCommandOptions
-    }
-
-    const command = new ApplicationCommand(data, this.client)
-
-    this.commands.push(command)
-
-    return command
-  }
-
-  /**
    * Run a command
    * @param   channel The channel to run the command in
    * @param   user    The user who ran the command
@@ -313,7 +314,7 @@ export class Syren {
    * @param   options The options supplied to the command
    * @returns         The resulting command obj
    */
-  callSlashCommand (channel: TextChannel, user: User, name: string, options?: InteractionOptions[]): CommandInteraction {
+  async callSlashCommand (channel: TextChannel, user: User, name: string, options?: InteractionOptions[]): Promise<CommandInteraction> {
     const command = this.commands.find((c) => c.name === name)
 
     if (!command) throw Error('Tried to call a non-existent command')
