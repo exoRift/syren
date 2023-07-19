@@ -38,7 +38,7 @@ export class Syren {
   selfUserRaw: RawOAuthUser = {
     avatar: null,
     discriminator: '0',
-    id: Date.now().toString(),
+    id: this._genID(),
     username: 'syrenself',
     flags: 0,
     public_flags: 0,
@@ -84,7 +84,7 @@ export class Syren {
    * @todo          Create the default role
    */
   createGuild (input?: Partial<RawGuild>): Guild {
-    const id = input?.id ?? Date.now().toString()
+    const id = input?.id ?? this._genID()
 
     const selfMember: RawMember = {
       user: this.selfUserRaw,
@@ -171,6 +171,7 @@ export class Syren {
    */
   createGuildTextChannel (input?: Partial<RawTextChannel>): TextChannel {
     const guildID = input?.guild_id ?? Date.now().toString()
+    const guildID = input?.guild_id ?? this._genID()
     const id = input?.id ?? (Date.now() + 1).toString() // Ensure IDs don't match
 
     if (!this.client.channelGuildMap[guildID]) {

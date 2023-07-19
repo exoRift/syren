@@ -15,7 +15,7 @@ export class TextChannel extends OTextChannel {
   declare client: Client
 
   async createMessage (options: CreateMessageOptions, author?: User | RawUser): Promise<Message<OTextChannel>> {
-    const id = Date.now().toString()
+    const id = this.client.syren._genID()
 
     const data: RawMessage = {
       attachments: options.attachments?.map((a, i) => ({
