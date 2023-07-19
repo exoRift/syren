@@ -170,7 +170,6 @@ export class Syren {
    * @returns       The resulting channel obj
    */
   createGuildTextChannel (input?: Partial<RawTextChannel>): TextChannel {
-    const guildID = input?.guild_id ?? Date.now().toString()
     const guildID = input?.guild_id ?? this._genID()
     const id = input?.id ?? (Date.now() + 1).toString() // Ensure IDs don't match
 
@@ -208,7 +207,7 @@ export class Syren {
 
   createUser (input?: Partial<RawUser>): User {
     const data: RawUser = {
-      id: Date.now().toString(),
+      id: this._genID(),
       avatar: null,
       discriminator: '0',
       public_flags: 0,
@@ -219,6 +218,7 @@ export class Syren {
     const user = new User(data, this.client)
 
     this.users.set(user.id, user)
+    this.client.users.set(user.id, user)
 
     return user
   }
@@ -229,7 +229,7 @@ export class Syren {
    * @returns       The resulting command obj
    */
   registerCommand (input: CreateApplicationCommandOptions): ApplicationCommand {
-    const id = Date.now().toString()
+    const id = this._genID()
 
     const data: RawApplicationCommand = {
       application_id: this.application.id,
@@ -320,7 +320,7 @@ export class Syren {
 
     if (!command) throw Error('Tried to call a non-existent command')
 
-    const id = Date.now().toString()
+    const id = this._genID()
 
     const data: RawApplicationCommandInteraction = {
       application_id: this.application.id,
@@ -332,7 +332,7 @@ export class Syren {
         guild_id: channel.guildID,
         options
       },
-      user: this.rawFromUser(user),
+      user: this._rawFromUser(user),
       id,
       token: 'FAKE TOKEN',
       type: InteractionTypes.APPLICATION_COMMAND,
@@ -346,11 +346,21 @@ export class Syren {
     return interaction
   }
 
-  rawFromUser (user: User | RawUser): RawUser {
+  /**
+   * @private
+   */
+  _rawFromUser (user: User | RawUser): RawUser {
     return {
       ...user,
       public_flags: user instanceof User ? user.publicFlags : user.public_flags
     }
+  }
+
+  /**
+   * @private
+   */
+  _genID (): string {
+    return Math.random().toString().split('.')[1]
   }
 }
 

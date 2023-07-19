@@ -33,7 +33,7 @@ export class TextChannel extends OTextChannel {
         url: 'file_url',
         description: undefined
       } satisfies RawAttachment)) ?? []) ?? [],
-      author: author ? this.client.syren.rawFromUser(author) : this.client.syren.selfUserRaw,
+      author: author ? this.client.syren._rawFromUser(author) : this.client.syren.selfUserRaw,
       channel_id: this.id,
       content: options.content ?? '',
       edited_timestamp: null,

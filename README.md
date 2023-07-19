@@ -1,3 +1,6 @@
+# Syren
+Syren is a small library to assist in testing expected interactions with the Discord API for things such as Discord bots or Discord bot frameworks
+
 [![Test Coverage](https://api.codeclimate.com/v1/badges/a9bb5636ab60166076ed/test_coverage)](https://codeclimate.com/github/exoRift/syren/test_coverage)
 [![Maintainability](https://api.codeclimate.com/v1/badges/a9bb5636ab60166076ed/maintainability)](https://codeclimate.com/github/exoRift/syren/maintainability)
 
@@ -5,9 +8,6 @@
 
 [![Version](https://img.shields.io/github/package-json/v/exoRift/syren.svg?label=Version)](https://www.npmjs.com/package/syren)
 [![NPM Downloads](https://img.shields.io/npm/dt/syren?label=Downloads&logo=npm)](https://www.npmjs.com/package/syren)
-
-# Syren
-Syren is a small library to assist in testing expected interactions with the Discord API for things such as Discord bots or Discord bot frameworks
 
 ## Example Test
 ```ts

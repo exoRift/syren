@@ -18,7 +18,7 @@ export class Message<T extends AnyTextableChannel | Uncached = AnyTextableChanne
     const isSelf = userID === this.client.user.id
 
     if (!this._reactions[emoji]) this._reactions[emoji] = new Set()
-    const unique = this._reactions[emoji].has(userID)
+    const unique = !this._reactions[emoji].has(userID)
     this._reactions[emoji].add(userID)
 
     if (!this.reactions[emoji]) {
@@ -67,7 +67,7 @@ export class Message<T extends AnyTextableChannel | Uncached = AnyTextableChanne
       limit = 100
     } = options
 
-    const ids = Array.from(this._reactions[emoji])
+    const ids = Array.from(this._reactions[emoji] ?? [])
 
     return ids
       .slice(after ? ids.indexOf(after) : 0, limit)

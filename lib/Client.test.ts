@@ -63,6 +63,8 @@ test('message sent', (t) => {
   })
 })
 
+test.todo('message deleted')
+
 test('custom message author', (t) => {
   t.plan(1)
 
@@ -123,8 +125,64 @@ test('reaction add', async (t) => {
   return await t.context.client.syren.addReaction(target, '💀')
 })
 
-test.todo('reaction remove')
+test.todo('failure to add reaction on account of permissions')
 
-test.todo('remove all reactions of emoji')
+test('reaction remove', async (t) => {
+  t.plan(5)
 
-test.todo('remove all reactions')
+  const target = await t.context.channel.createMessage({ content: 'content' })
+
+  t.context.client.once('messageReactionRemove', (msg, reactor, reaction) => {
+    t.is(reaction.name, '🍎', 'reaction matches')
+    t.is(msg.id, target.id, 'message IDs match')
+    t.is(reactor.id, t.context.client.user.id, 'ID is current user')
+    t.false(target.reactions['🍎'].me, 'me is false')
+
+    void target.getReactions('🍎').then((reactions) => t.deepEqual(reactions, [t.context.user], 'other user is still reacted'))
+  })
+
+  await target.createReaction('🍎')
+  await target.createReaction('🍎', t.context.user)
+
+  return await t.context.client.syren.removeReaction(target, '🍎')
+})
+
+test.todo('failure to remove reactions on account of permissions')
+
+test('remove all reactions', async (t) => {
+  t.plan(4)
+
+  const target = await t.context.channel.createMessage({ content: 'content' })
+
+  t.context.client.once('messageReactionRemoveAll', (msg) => {
+    t.is(msg.id, target.id, 'message IDs match')
+    t.deepEqual(target.reactions, {}, 'reaction record purged')
+
+    void target.getReactions('🍎').then((reactions) => t.is(reactions.length, 0, 'user reaction list empty (red)'))
+    void target.getReactions('🍏').then((reactions) => t.is(reactions.length, 0, 'user reaction list empty (green)'))
+  })
+
+  await target.createReaction('🍎')
+  await target.createReaction('🍏', t.context.user)
+
+  return await t.context.client.syren.removeAllReactions(target)
+})
+
+test('remove all reactions of emoji', async (t) => {
+  t.plan(3)
+
+  const target = await t.context.channel.createMessage({ content: 'content' })
+
+  t.context.client.once('messageReactionRemoveEmoji', (msg, reaction) => {
+    t.is(reaction.name, '🍎', 'reaction matches')
+    t.is(msg.id, target.id, 'message IDs match')
+    t.is(target.reactions['🍏'].count, 1, 'other reactions remain')
+  })
+
+  await target.createReaction('🍎')
+  await target.createReaction('🍏', t.context.user)
+
+  return await t.context.client.syren.removeAllReactions(target, '🍎')
+})
+
+test.todo('failure to remove all reactions on account of permissions')
