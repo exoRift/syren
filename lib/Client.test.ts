@@ -65,6 +65,10 @@ test('message sent', (t) => {
 
 test.todo('message deleted')
 
+test.todo('message edited') // NOTE: Remember to check timestamp
+
+test.todo('message with attachments')
+
 test('custom message author', (t) => {
   t.plan(1)
 

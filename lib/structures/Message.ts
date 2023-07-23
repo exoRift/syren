@@ -5,7 +5,10 @@ import {
   type AnyTextableChannel,
   type Uncached,
   type RawUser,
-  type EditMessageOptions
+  type EditMessageOptions,
+  type RawAttachment,
+  type CreateMessageOptions,
+  type RawUserWithMember
 } from 'oceanic.js'
 
 import { type Client } from '../Client'
@@ -14,6 +17,37 @@ import { type Client } from '../Client'
  * @todo Message interactions
  */
 export class Message<T extends AnyTextableChannel | Uncached = AnyTextableChannel | Uncached> extends OMessage<T> {
+  /**
+   * Transform provided attachments and files into raw data for messages
+   * @param   options `CreateMessageOptions` or `EditMessageOptions`
+   * @returns         The raw data
+   */
+  static _syrenDigestAttachments (options: CreateMessageOptions | EditMessageOptions): RawAttachment[] {
+    return (options.attachments ?? []).map<RawAttachment>((a, i) => ({
+      filename: a.filename ?? 'attachment_' + i.toString(),
+      id: a.id,
+      proxy_url: 'attachment_proxy_url',
+      size: 0,
+      url: 'attachment_url',
+      description: a.description
+    })).concat(options.files?.map((f, i) => ({
+      filename: f.name,
+      id: 'file_' + i.toString(),
+      proxy_url: 'file_proxy_url',
+      size: 0,
+      url: 'file_url',
+      description: undefined
+    })) ?? [])
+  }
+
+  static _syrenGetRoleMentions (options: CreateMessageOptions | EditMessageOptions): string[] {
+    return 
+  }
+
+  static _syrenGetUserMentions (options: CreateMessageOptions | EditMessageOptions): RawUserWithMember[] {
+
+  }
+
   protected _reactions: Record<string, Set<string>> = {}
   declare client: Client
 
@@ -87,10 +121,11 @@ export class Message<T extends AnyTextableChannel | Uncached = AnyTextableChanne
     this.channel?.messages.delete(this.id)
   }
 
-  /**
-   * @todo
-   */
-  // async edit (options: EditMessageOptions): Promise<this> {
-  //   options.
-  // }
+  async edit (options: EditMessageOptions): Promise<this> {
+    if (this.author.id !== this.client.user.id) throw Error() // TODO: Get the error message for this
+
+    // NOTE: Remember to set edited timestamp
+
+    return this
+  }
 }
