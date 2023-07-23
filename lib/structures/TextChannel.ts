@@ -14,6 +14,9 @@ import { type Client } from '../Client'
 export class TextChannel extends OTextChannel {
   declare client: Client
 
+  /**
+   * @todo Handle other options (such as mentions)
+   */
   async createMessage (options: CreateMessageOptions, author?: User | RawUser): Promise<Message<OTextChannel>> {
     const id = this.client.syren._genID()
 

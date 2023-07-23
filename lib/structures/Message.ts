@@ -4,11 +4,15 @@ import {
   type User,
   type AnyTextableChannel,
   type Uncached,
-  type RawUser
+  type RawUser,
+  type EditMessageOptions
 } from 'oceanic.js'
 
 import { type Client } from '../Client'
 
+/**
+ * @todo Message interactions
+ */
 export class Message<T extends AnyTextableChannel | Uncached = AnyTextableChannel | Uncached> extends OMessage<T> {
   protected _reactions: Record<string, Set<string>> = {}
   declare client: Client
@@ -74,4 +78,19 @@ export class Message<T extends AnyTextableChannel | Uncached = AnyTextableChanne
       .map((id) => this.client.users.get(id))
       .filter((u): u is User => Boolean(u))
   }
+
+  /**
+   * @todo Do something with the reason
+   * @todo Throw(?) if the bot doesn't have permissions
+   */
+  async delete (reason?: string): Promise<void> {
+    this.channel?.messages.delete(this.id)
+  }
+
+  /**
+   * @todo
+   */
+  // async edit (options: EditMessageOptions): Promise<this> {
+  //   options.
+  // }
 }
