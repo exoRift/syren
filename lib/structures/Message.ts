@@ -25,7 +25,7 @@ export class Message<T extends AnyTextableChannel | Uncached = AnyTextableChanne
   static _syrenDigestAttachments (options: CreateMessageOptions | EditMessageOptions): RawAttachment[] {
     return (options.attachments ?? []).map<RawAttachment>((a, i) => ({
       filename: a.filename ?? 'attachment_' + i.toString(),
-      id: a.id,
+      id: a.id?.toString() ?? Date.now().toString(),
       proxy_url: 'attachment_proxy_url',
       size: 0,
       url: 'attachment_url',
@@ -41,11 +41,11 @@ export class Message<T extends AnyTextableChannel | Uncached = AnyTextableChanne
   }
 
   static _syrenGetRoleMentions (options: CreateMessageOptions | EditMessageOptions): string[] {
-    return 
+    return []
   }
 
   static _syrenGetUserMentions (options: CreateMessageOptions | EditMessageOptions): RawUserWithMember[] {
-
+    return []
   }
 
   protected _reactions: Record<string, Set<string>> = {}
@@ -59,14 +59,28 @@ export class Message<T extends AnyTextableChannel | Uncached = AnyTextableChanne
     const unique = !this._reactions[emoji].has(userID)
     this._reactions[emoji].add(userID)
 
-    if (!this.reactions[emoji]) {
-      this.reactions[emoji] = {
+    const entry = this.reactions.find((r) => r.emoji.name === emoji)
+
+    if (!entry) {
+      this.reactions.push({
+        emoji: {
+          id: emoji,
+          name: emoji,
+          animated: false
+        },
         count: 1,
-        me: isSelf
-      }
+        me: isSelf,
+        burstColors: [],
+        countDetails: {
+          burst: 0,
+          normal: 1
+        },
+        meBurst: false
+      })
     } else if (unique) {
-      ++this.reactions[emoji].count
-      this.reactions[emoji].me = isSelf
+      ++entry.count
+      ++entry.countDetails.normal
+      entry.me = isSelf
     }
   }
 
@@ -78,9 +92,11 @@ export class Message<T extends AnyTextableChannel | Uncached = AnyTextableChanne
 
     if (this._reactions[emoji]) this._reactions[emoji].delete(user)
 
-    if (this.reactions[emoji]) {
-      --this.reactions[emoji].count
-      this.reactions[emoji].me &&= !isSelf
+    const entry = this.reactions.find((r) => r.emoji.name === emoji)
+
+    if (entry) {
+      --entry.count
+      entry.me &&= !isSelf
     }
   }
 
@@ -91,11 +107,15 @@ export class Message<T extends AnyTextableChannel | Uncached = AnyTextableChanne
     if (emoji) {
       this._reactions[emoji].clear()
 
-      this.reactions[emoji].count = 0
-      this.reactions[emoji].me = false
+      const entry = this.reactions.find((r) => r.emoji.name === emoji)
+
+      if (entry) {
+        entry.count = 0
+        entry.me = false
+      }
     } else {
       this._reactions = {}
-      this.reactions = {}
+      this.reactions = []
     }
   }
 

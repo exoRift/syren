@@ -36,6 +36,7 @@ export class Syren {
   application: ClientApplication
   shard: Shard
   selfUserRaw: RawOAuthUser = {
+    global_name: 'syrenself',
     avatar: null,
     discriminator: '0',
     id: this._genID(),
@@ -149,6 +150,8 @@ export class Syren {
       vanity_url_code: null,
       verification_level: VerificationLevels.NONE,
       voice_states: [],
+      incident_actions: null,
+      inventory_settings: null,
       ...input
     }
 
@@ -207,6 +210,7 @@ export class Syren {
 
   createUser (input?: Partial<RawUser>): User {
     const data: RawUser = {
+      global_name: null,
       id: this._genID(),
       avatar: null,
       discriminator: '0',
@@ -275,7 +279,7 @@ export class Syren {
       id: null,
       name: emoji,
       animated: false
-    })
+    }, false)
   }
 
   /**
@@ -292,7 +296,7 @@ export class Syren {
       id: null,
       name: emoji,
       animated: false
-    })
+    }, false)
   }
 
   async removeAllReactions (message: Message, emoji?: string): Promise<void> {
@@ -352,6 +356,7 @@ export class Syren {
   _rawFromUser (user: User | RawUser): RawUser {
     return {
       ...user,
+      global_name: null,
       public_flags: user instanceof User ? user.publicFlags : user.public_flags
     }
   }
