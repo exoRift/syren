@@ -150,7 +150,7 @@ export class Syren {
       vanity_url_code: null,
       verification_level: VerificationLevels.NONE,
       voice_states: [],
-      incident_actions: null,
+      incident_actions: undefined as any as null, // BUG with Oceanic
       inventory_settings: null,
       ...input
     }

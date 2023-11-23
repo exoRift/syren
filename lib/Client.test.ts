@@ -140,7 +140,7 @@ test('reaction remove', async (t) => {
     t.is(reaction.name, '🍎', 'reaction matches')
     t.is(msg.id, target.id, 'message IDs match')
     t.is(reactor.id, t.context.client.user.id, 'ID is current user')
-    t.false(target.reactions['🍎'].me, 'me is false')
+    t.false(target.reactions.find((r) => r.emoji.name === '🍎')?.me, 'me is false')
 
     void target.getReactions('🍎').then((reactions) => t.deepEqual(reactions, [t.context.user], 'other user is still reacted'))
   })
@@ -160,7 +160,7 @@ test('remove all reactions', async (t) => {
 
   t.context.client.once('messageReactionRemoveAll', (msg) => {
     t.is(msg.id, target.id, 'message IDs match')
-    t.deepEqual(target.reactions, {}, 'reaction record purged')
+    t.deepEqual(target.reactions, [], 'reaction record purged')
 
     void target.getReactions('🍎').then((reactions) => t.is(reactions.length, 0, 'user reaction list empty (red)'))
     void target.getReactions('🍏').then((reactions) => t.is(reactions.length, 0, 'user reaction list empty (green)'))
@@ -180,7 +180,7 @@ test('remove all reactions of emoji', async (t) => {
   t.context.client.once('messageReactionRemoveEmoji', (msg, reaction) => {
     t.is(reaction.name, '🍎', 'reaction matches')
     t.is(msg.id, target.id, 'message IDs match')
-    t.is(target.reactions['🍏'].count, 1, 'other reactions remain')
+    t.is(target.reactions.find((r) => r.emoji.name === '🍏')?.count, 1, 'other reactions remain')
   })
 
   await target.createReaction('🍎')
