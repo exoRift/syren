@@ -1,6 +1,6 @@
 name: Quality Assurance
 
-on: 
+on:
   push:
     branches:
       - master
@@ -15,26 +15,24 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         node: [18.x]
-        pnpm: [8.x]
-        packager: [pnpm]
+        bun: [1.0.4]
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v3
-      - name: Set up PNPM
-        uses: pnpm/action-setup@v2
-        with:
-          version: ${{ matrix.pnpm }}
       - name: Set up Node
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
-          cache: ${{ matrix.packager }}
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: ${{ matrix.bun }}
       - name: Install Dependencies
-        run: pnpm i
+        run: bun i
       - name: Run Tests
-        run: pnpm test
+        run: bun run test
       - name: Upload Coverage
         if: success()
         uses: paambaati/codeclimate-action@v5
@@ -49,27 +47,23 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         node: [18.x]
-        pnpm: [8.x]
-        packager: [pnpm]
+        bun: [1.0.4]
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v3
-      - name: Set up PNPM
-        uses: pnpm/action-setup@v2
-        with:
-          version: ${{ matrix.pnpm }}
       - name: Set up Node
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
-          cache: ${{ matrix.packager }}
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: ${{ matrix.bun }}
       - name: Install Dependencies
-        run: pnpm i
+        run: bun i
       - name: Validate Typescript
         uses: fersilva16/ts-report-action@1.2.1
-        with:
-          project: tsconfig.eslint.json
       - name: Lint Code
-        run: npm run lint
+        run: bun run lint
