@@ -68,17 +68,6 @@ export class Syren {
   }
 
   /**
-   * "Connect" to the Discord API
-   */
-  async connect (): Promise<void> {
-    this.client.shards.set(this.shard.id, this.shard)
-    this.client.users.add(this.client.user)
-
-    this.shard.emit('ready')
-    this.client.emit('ready')
-  }
-
-  /**
    * Create a guild
    * @param   input The guild data
    * @returns       The resulting guild obj
@@ -386,5 +375,16 @@ export class Client extends OceanicClient {
 
   get user (): ExtendedUser {
     return this._self
+  }
+
+  /**
+   * "Connect" to the Discord API
+   */
+  async connect (): Promise<void> {
+    this.shards.set(this.syren.shard.id, this.syren.shard)
+    this.users.add(this.user)
+
+    this.emit('ready')
+    this.emit('ready')
   }
 }
