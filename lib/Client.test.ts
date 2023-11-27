@@ -34,7 +34,7 @@ test.beforeEach((t) => {
 test('connecting', async (t) => {
   t.plan(1)
 
-  await t.context.client.syren.connect()
+  await t.context.client.connect()
 
   t.is(t.context.client.users.get(t.context.client.user.id)?.id, t.context.client.user.id, 'self user created')
 })
@@ -61,6 +61,20 @@ test('message sent', (t) => {
   return t.context.client.syren.sendMessage(t.context.channel, {
     content: 'content'
   })
+})
+
+test('message mentions', (t) => {
+  t.plan(2)
+
+  t.context.client.syren.addUserToGuild(t.context.guild, t.context.user)
+
+  return t.context.client.syren.sendMessage(t.context.channel, {
+    content: `@everyone <@${t.context.user.id}>`
+  })
+    .then((m) => {
+      t.true(m.mentions.everyone)
+      t.true(m.mentions.users.some((u) => u.id === t.context.user.id))
+    })
 })
 
 test.todo('message deleted')

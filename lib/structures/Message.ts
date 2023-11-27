@@ -8,10 +8,17 @@ import {
   type EditMessageOptions,
   type RawAttachment,
   type CreateMessageOptions,
-  type RawUserWithMember
+  type RawUserWithMember,
+  type ChannelMention,
+  ChannelTypes
 } from 'oceanic.js'
 
 import { type Client } from '../Client'
+import { type TextChannel } from './TextChannel'
+
+const userMentionMatcher = /<@(.*)>/g
+const roleMentionMatcher = /<@&(.*)>/g
+const channelMentionMatcher = /<#(.*)>/g
 
 /**
  * @todo Message interactions
@@ -40,12 +47,47 @@ export class Message<T extends AnyTextableChannel | Uncached = AnyTextableChanne
     })) ?? [])
   }
 
-  static _syrenGetRoleMentions (options: CreateMessageOptions | EditMessageOptions): string[] {
+  /** Get role mentions from message content */
+  static _syrenGetRoleMentions (options: CreateMessageOptions | EditMessageOptions, channel: TextChannel): string[] {
+    // TODO: Filter out invalid roles
     return []
   }
 
-  static _syrenGetUserMentions (options: CreateMessageOptions | EditMessageOptions): RawUserWithMember[] {
-    return []
+  /** Get user mentions from message content */
+  static _syrenGetUserMentions (options: CreateMessageOptions | EditMessageOptions, channel: TextChannel): RawUserWithMember[] {
+    // TODO: Filter out invalid users
+    const raw = Array.from(options.content?.matchAll(userMentionMatcher) ?? [])
+
+    switch (channel.type) { // TODO: Other channels
+      case ChannelTypes.GUILD_TEXT:
+        return raw
+          .map(([, id]) => channel.guild.members.has(id) ? channel.client.syren._rawFromMember(channel.guild.members.get(id)!) : undefined)
+          .filter((v): v is RawUserWithMember => Boolean(v))
+    }
+  }
+
+  /** Get channel mentions from message content */
+  static _syrenGetChannelMentions (options: CreateMessageOptions | EditMessageOptions, channel: TextChannel): ChannelMention[] {
+    // TODO: Filter out invalid channels
+    const raw = Array.from(options.content?.matchAll(channelMentionMatcher) ?? [])
+
+    switch (channel.type) { // TODO: Other channels
+      case ChannelTypes.GUILD_TEXT:
+        return raw
+          .map(([, id]) => {
+            if (channel.guild.channels.has(id)) {
+              const existing = channel.guild.channels.get(id)!
+
+              return {
+                id,
+                guild_id: channel.guild.id,
+                name: existing.name,
+                type: existing.type as ChannelTypes
+              } satisfies ChannelMention
+            } else return undefined
+          })
+          .filter((v): v is ChannelMention => Boolean(v))
+    }
   }
 
   protected _reactions: Record<string, Set<string>> = {}

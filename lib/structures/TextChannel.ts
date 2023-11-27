@@ -31,9 +31,10 @@ export class TextChannel extends OTextChannel {
       edited_timestamp: null,
       embeds: options.embeds ?? [],
       id,
-      mention_everyone: false, // TODO: figure out (how is @everyone formatted in content)
-      mention_roles: Message._syrenGetRoleMentions(options),
-      mentions: Message._syrenGetUserMentions(options),
+      mention_everyone: Boolean(options.content?.includes('@everyone')), // TODO: And has the mention everyone permission
+      mentions: Message._syrenGetUserMentions(options, this),
+      mention_roles: Message._syrenGetRoleMentions(options, this),
+      mention_channels: Message._syrenGetChannelMentions(options, this),
       pinned: false, // TODO: Allow pinning
       timestamp: Date.now().toString(),
       tts: options.tts ?? false,

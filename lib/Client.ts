@@ -25,7 +25,9 @@ import {
   InteractionTypes,
   type RawMember,
   type TextChannel as OTextChannel,
-  type RawUser
+  type RawUser,
+  type RawUserWithMember,
+  Member
 } from 'oceanic.js'
 
 import { TextChannel } from './structures/TextChannel'
@@ -217,6 +219,29 @@ export class Syren {
   }
 
   /**
+   * Add a user to a guild
+   * @param   guild The guild
+   * @param   user  The user
+   * @returns       The member
+   */
+  addUserToGuild (guild: Guild, user: User): Member {
+    const raw: RawMember = {
+      user: this._rawFromUser(user),
+      deaf: false,
+      joined_at: Date.now().toString(),
+      mute: false,
+      roles: [guild.id] // Default role
+    }
+
+    const member = new Member(raw, this.client, guild.id)
+
+    ++guild.memberCount
+    guild.members.add(member)
+
+    return member
+  }
+
+  /**
    * Register a command to be called
    * @param   input The options
    * @returns       The resulting command obj
@@ -353,6 +378,24 @@ export class Syren {
   /**
    * @private
    */
+  _rawFromMember (member: Member): RawUserWithMember {
+    return {
+      ...member,
+      username: member.username,
+      discriminator: member.discriminator,
+      member: {
+        ...member,
+        joined_at: null,
+        user: this._rawFromUser(member.user)
+      },
+      global_name: null,
+      public_flags: member.publicFlags
+    }
+  }
+
+  /**
+   * @private
+   */
   _genID (): string {
     return Math.random().toString().split('.')[1]
   }
@@ -360,6 +403,7 @@ export class Syren {
 
 /**
  * An augmented version of the {@link https://docs.oceanic.ws/v1.7.1 Oceanic.JS} client
+ * @todo Gateway Intents
  */
 export class Client extends OceanicClient {
   /**
