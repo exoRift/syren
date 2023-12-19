@@ -77,7 +77,19 @@ test('message mentions', (t) => {
     })
 })
 
-test.todo('message deleted')
+test('message deleted', (t) => {
+  t.plan(2)
+
+  return t.context.channel.createMessage({
+    content: 'content'
+  })
+    .then((msg) => {
+      t.true(msg.channel.messages.has(msg.id))
+
+      return msg.delete()
+        .then(() => t.false(msg.channel.messages.has(msg.id)))
+    })
+})
 
 test('message edited', (t) => {
   t.plan(5)
@@ -96,7 +108,6 @@ test('message edited', (t) => {
           t.true(msg.editedTimestamp! > msg.timestamp, 'edited timestamp is later than first timestamp')
         })
     })
-    .catch((err) => t.fail(err.message))
 })
 
 test.todo('message with attachments')
