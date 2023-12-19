@@ -79,7 +79,25 @@ test('message mentions', (t) => {
 
 test.todo('message deleted')
 
-test.todo('message edited') // NOTE: Remember to check timestamp
+test('message edited', (t) => {
+  t.plan(5)
+
+  return t.context.channel.createMessage({ content: 'content' })
+    .then((msg) => {
+      const firstTimestamp = msg.timestamp
+      t.is(msg.editedTimestamp, null, 'edited timestamp null')
+      t.is(msg.content, 'content', 'content matches')
+
+      return msg.edit({ content: 'newContent' })
+        .then((msg) => {
+          t.assert(msg.editedTimestamp, 'edited timestamp exists')
+
+          t.is(msg.timestamp, firstTimestamp, 'timestamp remains the same')
+          t.true(msg.editedTimestamp! > msg.timestamp, 'edited timestamp is later than first timestamp')
+        })
+    })
+    .catch((err) => t.fail(err.message))
+})
 
 test.todo('message with attachments')
 

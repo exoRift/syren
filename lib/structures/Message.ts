@@ -184,9 +184,12 @@ export class Message<T extends AnyTextableChannel | Uncached = AnyTextableChanne
   }
 
   async edit (options: EditMessageOptions): Promise<this> {
-    if (this.author.id !== this.client.user.id) throw Error() // TODO: Get the error message for this
+    if (this.author.id !== this.client.user.id) throw Error('not your message') // TODO: Get the error message for this
 
-    // NOTE: Remember to set edited timestamp
+    if (options.content) this.content = options.content // TODO: mentions
+    // if (options.attachments ?? options.files) this.attachments = new TypedCollection(Message._syrenDigestAttachments(options), this.client) // TODO: Impl this correctly
+
+    this.editedTimestamp = new Date()
 
     return this
   }

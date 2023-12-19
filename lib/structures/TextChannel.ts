@@ -36,7 +36,7 @@ export class TextChannel extends OTextChannel {
       mention_roles: Message._syrenGetRoleMentions(options, this),
       mention_channels: Message._syrenGetChannelMentions(options, this),
       pinned: false, // TODO: Allow pinning
-      timestamp: Date.now().toString(),
+      timestamp: new Date().toISOString(),
       tts: options.tts ?? false,
       type: MessageTypes.DEFAULT
     }
