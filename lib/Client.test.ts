@@ -110,7 +110,28 @@ test('message edited', (t) => {
     })
 })
 
-test.todo('message with attachments')
+test('message with attachments', (t) => {
+  t.plan(3)
+
+  t.context.client.once('messageCreate', (msg) => {
+    const attachment = msg.attachments.get('id')
+    t.assert(attachment, 'attachment found')
+
+    t.is(attachment?.filename, 'filename', 'file name matches')
+    t.is(attachment?.description, 'file description', 'file desc matches')
+  })
+
+  return t.context.client.syren.sendMessage(t.context.channel, {
+    content: 'content',
+    attachments: [
+      {
+        id: 'id',
+        filename: 'filename',
+        description: 'file description'
+      }
+    ]
+  }, t.context.user)
+})
 
 test('custom message author', (t) => {
   t.plan(1)
